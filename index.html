@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>2ºBach A</title>
+
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  background: #f4f4f9;
+  text-align: center;
+}
+
+.header img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+h1 { margin: 15px 0; }
+
+.mensaje-profe {
+  font-style: italic;
+  margin: 10px;
+  color: #444;
+}
+
+/* MENSAJES */
+.contenedor {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  text-align: left;
+}
+
+.nombre {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* BOTÓN FLOTANTE */
+.fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #333;
+  color: white;
+  padding: 14px 18px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* MODAL */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  justify-content: center;
+  align-items: center;
+}
+
+.box {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  width: 300px;
+}
+
+input, textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  margin: 8px 0;
+}
+
+button {
+  padding: 10px;
+  width: 100%;
+  border: none;
+  background: #333;
+  color: white;
+  border-radius: 10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+  <img src="FOTO.jpg">
+</div>
+
+<h1>🎓 2ºBach A</h1>
+
+<div class="mensaje-profe">
+  <p>Os quedarán los compañeros que os acompañaron en el camino.</p>
+  <p>Por un curso y etapa que os haya hecho crecer 🌱.</p>
+  <p>Suerte en todo lo que venga 🍀❤️</p>
+</div>
+
+<!-- MENSAJES -->
+<div class="contenedor" id="mensajes"></div>
+
+<!-- BOTÓN -->
+<div class="fab" onclick="openModal()">✍️</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="box">
+    <h3>💬 Escribe tu mensaje</h3>
+
+    <input id="nombre" placeholder="Nombre">
+    <textarea id="mensaje" placeholder="Mensaje"></textarea>
+
+    <button onclick="enviar()">Enviar</button>
+  </div>
+</div>
+
+<script>
+
+const scriptURL = "https://script.google.com/macros/s/AKfycbwXMbiHv8MiQ_Cywzlg6gJn9W2xb2w00CbGorualMAfP13ITYi81d-meNfWOtkgZK8Q/exec";
+
+function openModal() {
+  document.getElementById("modal").style.display = "flex";
+}
+
+window.onclick = function(e) {
+  if (e.target.id === "modal") {
+    document.getElementById("modal").style.display = "none";
+  }
+}
+
+/* ENVIAR */
+function enviar() {
+
+  const nombre = document.getElementById("nombre").value;
+  const mensaje = document.getElementById("mensaje").value;
+
+  if (!nombre || !mensaje) {
+    alert("Rellena todo 😊");
+    return;
+  }
+
+  const params = new URLSearchParams();
+  params.append("nombre", nombre);
+  params.append("mensaje", mensaje);
+
+  fetch(scriptURL, {
+    method: "POST",
+    body: params
+  })
+  .then(r => r.text())
+  .then(res => {
+
+    if (res !== "OK") {
+      alert("Error al enviar");
+      return;
+    }
+
+    document.getElementById("nombre").value = "";
+    document.getElementById("mensaje").value = "";
+    document.getElementById("modal").style.display = "none";
+
+    cargarMensajes();
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Error al enviar 😢");
+  });
+}
+
+/* CARGAR MENSAJES (YA SIN CSV → JSON DEL APPS SCRIPT) */
+function cargarMensajes() {
+
+  fetch(scriptURL)
+    .then(r => r.json())
+    .then(data => {
+
+      const cont = document.getElementById("mensajes");
+      cont.innerHTML = "";
+
+      data.forEach(m => {
+
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.innerHTML = `
+          <div class="nombre">${m.nombre}</div>
+          <div>${m.mensaje}</div>
+        `;
+
+        cont.appendChild(card);
+      });
+
+    })
+    .catch(err => {
+      console.error("Error cargando mensajes:", err);
+    });
+}
+
+cargarMensajes();
+
+</script>
+
+</body>
+</html>
